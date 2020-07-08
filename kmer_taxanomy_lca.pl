@@ -22,15 +22,14 @@ while(<SEQ>){
 	my $id = (split /\s+/, $tempid)[0];
 	my $seq = join("", @temp);
 	my @kmers = &kmer($seq, $ksize);
-#	print $id, "\t", $ID_taxa{$id}, "\t", join(";", @kmers), "\n";
 	for my $k (@kmers){
 		push @{$kmer_taxa{$k}}, $ID_taxa{$id};
 	}
 }
 $/ = "\n";
 close SEQ;
-my $w = '#' x $ksize ;
 
+my $w = '#' x $ksize ;
 open OUT1, '>all_kmer_taxa.list' || die $!;
 open OUT2, '>lca_kmer_taxa.list' || die $!;
 for my $k (sort {$a cmp $b } keys %kmer_taxa){
@@ -40,6 +39,7 @@ for my $k (sort {$a cmp $b } keys %kmer_taxa){
 close OUT1;
 close OUT2;
 
+#convert sequences to kmers
 sub kmer{
 	my ($seq, $ksize) = @_;
 	$seq = uc($seq);
@@ -66,6 +66,12 @@ sub hash_build{
 	return %idinfo;
 }
 
+
+#LCA algorithm
+#1 k__Bacteria;p__Bacteroidetes;c__Sphingobacteriia;o__Sphingobacteriales;f__Sphingobacteriaceae;g__Pedobacter;s__sp._HMT_318
+#2 k__Bacteria;p__Bacteroidetes;c__Sphingobacteriia;o__Sphingobacteriales;f__Sphingobacteriaceae;g__Pedobacter;s__sp._HMT_321
+#3 k__Bacteria;p__Bacteroidetes;c__Sphingobacteriia;o__Sphingobacteriales;f__Sphingobacteriaceae;g__Pedobacter;s__sp._HMT_933
+#lca_taxa is k__Bacteria;p__Bacteroidetes;c__Sphingobacteriia;o__Sphingobacteriales;f__Sphingobacteriaceae;g__Pedobacter
 sub lca_taxanomy{
 	#taxon must contains k,p,c,o,f,g,s
 	my ($taxa) = @_;
@@ -102,6 +108,10 @@ sub uniq{
 }
 
 
+#search top same chars
+#1 1 1 2 3 4, return 2
+#a a b a c d, return 1
+#a b c d e f, return 0
 sub search_top_same_chars{
 	my ($chars, $i) = @_;
 	$i ||= 0;
